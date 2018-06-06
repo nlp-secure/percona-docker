@@ -23,6 +23,8 @@ kubectl get pods -n "${POD_NAMESPACE}" -l app="${POD_LABEL_APP}" -o=jsonpath='{r
 # Get config
 DATADIR="$("mysqld" --verbose --wsrep_provider= --help 2>/dev/null | awk '$1 == "datadir" { print $2; exit }')"
 
+mv /usr/bin/clustercheck.sh /tmp/
+
 # if we have CLUSTER_JOIN - then we do not need to perform datadir initialize
 # the data will be copied from another node
 if [ -f "/tmp/cluster_addr.txt" ]; then
@@ -122,6 +124,8 @@ if [ -z "$WSREP_CLUSTER_ADDRESS" ]; then
 		#mv /etc/my.cnf $DATADIR
 	fi
 fi
+
+mv /tmp/clustercheck.sh /usr/bin/
 
 #--log-error=${DATADIR}error.log
 exec mysqld --user=mysql --wsrep_sst_auth="xtrabackup:${XTRABACKUP_PASSWORD}" ${CMDARG}

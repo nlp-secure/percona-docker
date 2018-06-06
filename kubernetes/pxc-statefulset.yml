@@ -12,6 +12,7 @@ spec:
       annotations:
         pod.alpha.kubernetes.io/initialized: "true"
     spec:
+      serviceAccountName: pxc-serviceaccount
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -24,7 +25,7 @@ spec:
             topologyKey: "failure-domain.beta.kubernetes.io/zone"
       containers:
       - name: mysql
-        image: nlpsecure/pxc-k8s:latest
+        image: nlpsecure/percona-xtradb-57:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 3306
@@ -39,7 +40,7 @@ spec:
           exec:
             command:
             - /usr/bin/clustercheck.sh
-          initialDelaySeconds: 90
+          initialDelaySeconds: 60
           timeoutSeconds: 15
           periodSeconds: 15
           failureThreshold: 5
@@ -87,10 +88,7 @@ spec:
                 name: pxc-secrets
                 key: monitor_password
           - name: POD_LABEL_APP
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.labels['app']
+            value: mysql
           - name: POD_NAMESPACE
             valueFrom:
               fieldRef:
