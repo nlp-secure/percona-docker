@@ -7,7 +7,6 @@ spec:
   serviceName: "proxysql"
   replicas: 1
   selector:
-  front: proxysql
   template:
     metadata:
       name: proxysql
@@ -24,7 +23,7 @@ spec:
               - key: app
                 operator: In
                 values:
-                - mysql
+                - proxysql
             topologyKey: "failure-domain.beta.kubernetes.io/zone"
       containers:
       - name: proxysql
