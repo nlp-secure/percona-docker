@@ -28,7 +28,7 @@ spec:
             topologyKey: "failure-domain.beta.kubernetes.io/zone"
       containers:
       - name: proxysql
-        image: perconalab/proxysql-k8s:latest
+        image: nlpsecure/proxysql:latest
         ports:
         - containerPort: 3306
           name: mysql
