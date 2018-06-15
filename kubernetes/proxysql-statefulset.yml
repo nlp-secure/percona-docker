@@ -35,7 +35,6 @@ spec:
         volumeMounts:
         - name: proxydata
           mountPath: /var/lib/proxysql
-          subPath: data
         env:
         - name: CLUSTER_NAME
           valueFrom:

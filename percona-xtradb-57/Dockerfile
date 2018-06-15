@@ -1,4 +1,4 @@
-FROM debian:jessie
+FROM debian:stretch
 MAINTAINER Percona Development <info@percona.com>
 LABEL vendor=Percona
 LABEL com.percona.package="Percona XtraDB Cluster"
@@ -7,23 +7,25 @@ LABEL io.k8s.description="Percona XtraDB Cluster is an active/active high availa
 LABEL io.k8s.display-name="Percona XtraDB Cluster 5.7"
 
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && \
+    apt-get upgrade && \
+    apt-get install -y --no-install-recommends \
                 apt-transport-https ca-certificates \
-                pwgen timelimit curl \
+                pwgen timelimit curl supervisor cron \
         && rm -rf /var/lib/apt/lists/*
 
 RUN curl -Lo /usr/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && \
     chmod +x /usr/bin/kubectl
 
 RUN apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys 8507EFA5
-RUN echo 'deb https://repo.percona.com/apt jessie testing' > /etc/apt/sources.list.d/percona.list
+RUN echo 'deb https://repo.percona.com/apt stretch testing' > /etc/apt/sources.list.d/percona.list
 
 # the numeric UID is needed for OpenShift
 RUN useradd -u 1001 -r -g 0 -s /sbin/nologin \
             -c "Default Application User" mysql
 
 ENV PERCONA_MAJOR 5.7
-ENV PERCONA_VERSION 5.7.18-16-4.jessie
+ENV PERCONA_VERSION 5.7.21-26-1.stretch
 
 # the "/var/lib/mysql" stuff here is because the mysql-server postinst doesn't have an explicit way to disable the mysql_install_db codepath besides having a database already "configured" (ie, stuff in /var/lib/mysql/mysql)
 # also, we set debconf keys to make APT a little quieter
@@ -52,6 +54,8 @@ RUN sed -Ei '/log-error/s/^/#/g' -i /etc/mysql/my.cnf
 
 ADD node.cnf /etc/mysql/conf.d/node.cnf
 RUN echo '!include /etc/mysql/conf.d/node.cnf' >> /etc/mysql/my.cnf
+
+COPY supervisord.conf /etc/supervisord.conf
 
 COPY entrypoint.sh /entrypoint.sh
 COPY dockerdir /

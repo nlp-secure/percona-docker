@@ -127,5 +127,6 @@ fi
 
 mv /tmp/clustercheck.sh /usr/bin/
 
-#--log-error=${DATADIR}error.log
-exec mysqld --user=mysql --wsrep_sst_auth="xtrabackup:${XTRABACKUP_PASSWORD}" ${CMDARG}
+sed -i'' -e "s#command=mysqld.*#command=mysqld --user=mysql --wsrep_sst_auth=\"xtrabackup:${XTRABACKUP_PASSWORD}\" ${CMDARG}#g"
+
+supervisord -u 1001
