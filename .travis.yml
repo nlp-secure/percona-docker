@@ -34,9 +34,13 @@ script:
   - echo "Cluster name is $CLUSTER_NAME"
   - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
   - docker pull $PXC_REPO || true
+  - docker pull $PROXYSQL_REPO || true
   - docker build -t $PXC_REPO:latest percona-xtradb-57
+  - docker build -t $PROXYSQL_REPO:latest proxysql
   - docker tag $PXC_REPO:latest $PXC_REPO:$TAG
+  - docker tag $PROXYSQL_REPO:latest $PROXYSQL_REPO:$TAG
   - docker push $PXC_REPO:$TAG
+  - docker push $PROXYSQL_REPO:$TAG
   - kubectl delete limitrange limits
   - export ACCOUNT=$(gcloud info --format='value(config.account)')
   - kubectl create clusterrolebinding owner-cluster-admin-binding --clusterrole cluster-admin --user $ACCOUNT
