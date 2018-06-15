@@ -18,7 +18,7 @@ RUN curl -Lo /usr/bin/kubectl https://storage.googleapis.com/kubernetes-release/
     chmod +x /usr/bin/kubectl
 
 RUN apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys 8507EFA5
-RUN echo 'deb https://repo.percona.com/apt stretch testing' > /etc/apt/sources.list.d/percona.list
+RUN echo 'deb https://repo.percona.com/apt stretch main' > /etc/apt/sources.list.d/percona.list
 
 # the numeric UID is needed for OpenShift
 RUN useradd -u 1001 -r -g 0 -s /sbin/nologin \
