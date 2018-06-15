@@ -49,7 +49,7 @@ script:
   - kubectl create -f kubernetes/pxc-secrets.yml
   - kubectl create -f kubernetes/pxc-services.yml
   - "sed -i'' -e 's#image: nlpsecure/percona-xtradb-57.*#image: '\"$PXC_REPO:$TAG\"'#g' kubernetes/pxc-statefulset.yml"
-  - "sed -i'' -e 's#image: nlpsecure/proxysql.*#image: '\$PROXYSQL_REPO:$TAG\"'#g' kubernetes/proxysql-statefulset.yml"
+  - "sed -i'' -e 's#image: nlpsecure/proxysql.*#image: '\"$PROXYSQL_REPO:$TAG\"'#g' kubernetes/proxysql-statefulset.yml"
   - kubectl create -f kubernetes/pxc-statefulset.yml
   - sleep 30
   - for i in {0..100}; do if [ "$(kubectl get pod mysql-0 -o=jsonpath='{.status.containerStatuses[0].ready}' || echo false)" == "true" ]; then break; fi; sleep 1; done
