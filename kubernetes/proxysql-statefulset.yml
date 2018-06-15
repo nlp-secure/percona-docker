@@ -1,0 +1,75 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: proxysql
+  app: proxysql-app
+spec:
+  serviceName: "proxysql"
+  replicas: 1
+  selector:
+  front: proxysql
+  template:
+    metadata:
+      name: proxysql
+      labels:
+        app: proxysql
+        front: proxysql
+    spec:
+      serviceAccountName: pxc-serviceaccount
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - mysql
+            topologyKey: "failure-domain.beta.kubernetes.io/zone"
+      containers:
+      - name: proxysql
+        image: perconalab/proxysql-k8s:latest
+        ports:
+        - containerPort: 3306
+          name: mysql
+        - containerPort: 6032
+          name: proxyadm
+        volumeMounts:
+        - name: proxydata
+          mountPath: /var/lib/proxysql
+          subPath: data
+        env:
+        - name: CLUSTER_NAME
+          valueFrom:
+               fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+              secretKeyRef:
+                name: pxc-secrets
+                key: root_password
+        - name: MYSQL_PROXY_USER
+          valueFrom:
+              secretKeyRef:
+                name: pxc-secrets
+                key: monitor_username
+        - name: MYSQL_PROXY_PASSWORD
+          valueFrom:
+              secretKeyRef:
+                name: pxc-secrets
+                key: monitor_username
+        - name: PEERS
+          value: mysql-0.pxc,mysql-1.pxc,mysql-2.pxc
+        lifecycle:
+          postStart:
+            exec:
+              command: ["/usr/bin/add_cluster_nodes.sh"]
+  volumeClaimTemplates:
+  - metadata:
+      name: proxydata
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 2Gi

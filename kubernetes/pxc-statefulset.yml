@@ -9,8 +9,6 @@ spec:
     metadata:
       labels:
         app: mysql
-      annotations:
-        pod.alpha.kubernetes.io/initialized: "true"
     spec:
       serviceAccountName: pxc-serviceaccount
       affinity:

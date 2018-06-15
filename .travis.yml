@@ -33,10 +33,10 @@ script:
   - gcloud container clusters get-credentials $CLUSTER_NAME
   - echo "Cluster name is $CLUSTER_NAME"
   - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
-  - docker pull $DOCKER_REPO || true
-  - docker build -t $DOCKER_REPO:latest percona-xtradb-57
-  - docker tag $DOCKER_REPO:latest $DOCKER_REPO:$TAG
-  - docker push $DOCKER_REPO:$TAG
+  - docker pull $PXC_REPO || true
+  - docker build -t $PXC_REPO:latest percona-xtradb-57
+  - docker tag $PXC_REPO:latest $PXC_REPO:$TAG
+  - docker push $PXC_REPO:$TAG
   - kubectl delete limitrange limits
   - export ACCOUNT=$(gcloud info --format='value(config.account)')
   - kubectl create clusterrolebinding owner-cluster-admin-binding --clusterrole cluster-admin --user $ACCOUNT
@@ -44,7 +44,8 @@ script:
   - kubectl create -f kubernetes/pxc-pv-host.yml
   - kubectl create -f kubernetes/pxc-secrets.yml
   - kubectl create -f kubernetes/pxc-services.yml
-  - "sed -i'' -e 's#image: nlpsecure/percona-xtradb-57.*#image: '\"$DOCKER_REPO:$TAG\"'#g' kubernetes/pxc-statefulset.yml"
+  - "sed -i'' -e 's#image: nlpsecure/percona-xtradb-57.*#image: '\"$PXC_REPO:$TAG\"'#g' kubernetes/pxc-statefulset.yml"
+  - "sed -i'' -e 's#image: nlpsecure/proxysql.*#image: '\$PROXYSQL_REPO:$TAG\"'#g' kubernetes/proxysql-statefulset.yml"
   - kubectl create -f kubernetes/pxc-statefulset.yml
   - sleep 30
   - for i in {0..100}; do if [ "$(kubectl get pod mysql-0 -o=jsonpath='{.status.containerStatuses[0].ready}' || echo false)" == "true" ]; then break; fi; sleep 1; done
@@ -59,6 +60,12 @@ script:
   - LOGS_2="$(kubectl logs mysql-2)"
   - "echo -n \"$LOGS_2\" | grep 'WSREP: 0.0 (mysql-0): State transfer to 2.0 (mysql-2) complete'"
   - "echo -n \"$LOGS_2\" | grep 'WSREP: Synchronized with group, ready for connections'"
+  - kubectl create -f kubernetes/proxysql-service.yml
+  - kubectl create -f kubernetes/proxysql-statefulset.yml
+  - sleep 30
+  - for i in {0..100}; do if [ "$(kubectl get pod proxysql-0 -o=jsonpath='{.status.containerStatuses[0].ready}' || echo false)" == "true" ]; then break; fi; sleep 1; done
+  - sleep 60
+  - kubectl logs proxysql-0
   - gcloud container clusters delete $CLUSTER_NAME
 
 deploy:
@@ -69,6 +76,6 @@ deploy:
   #     branch: develop
   # deploy master to production
   - provider: script
-    script: bash -c "docker push $DOCKER_REPO:latest"
+    script: bash -c "docker push $PXC_REPO:latest"
     on:
       branch: master
