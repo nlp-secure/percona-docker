@@ -2,4 +2,4 @@
 
 chown -R 1001 /var/lib/proxysql
 
-/usr/bin/proxysql --initial -f -c /etc/proxysql.cnf
+gosu $GOSU_USER /usr/bin/proxysql --initial -f -c /etc/proxysql.cnf

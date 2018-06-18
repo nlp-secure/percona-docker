@@ -1,6 +1,8 @@
 FROM centos:7
 MAINTAINER Percona Development <info@percona.com>
 
+ENV GOSU_VERSION 1.10
+
 # the numeric UID is needed for OpenShift
 RUN useradd -u 1001 -r -g 0 -s /sbin/nologin \
             -c "Default Application User" proxysql
@@ -16,6 +18,9 @@ ADD proxysql.cnf /etc/proxysql.cnf
 COPY proxysql-entry.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+RUN curl -o /usr/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-amd64" && \
+    chmod +x /usr/bin/gosu
+
 COPY add_cluster_nodes.sh /usr/bin/add_cluster_nodes.sh
 RUN chmod a+x /usr/bin/add_cluster_nodes.sh
 
@@ -25,6 +30,6 @@ EXPOSE 3306 6032
 ONBUILD RUN yum update -y
 
 ENTRYPOINT ["/entrypoint.sh"]
-USER 1001
+ENV GOSU_USER 1001
 
 CMD [""]
