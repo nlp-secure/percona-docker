@@ -18,7 +18,7 @@ ADD proxysql.cnf /etc/proxysql.cnf
 COPY proxysql-entry.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-RUN curl -o /usr/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-amd64" && \
+RUN curl -Lo /usr/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-amd64" && \
     chmod +x /usr/bin/gosu
 
 COPY add_cluster_nodes.sh /usr/bin/add_cluster_nodes.sh
