@@ -55,13 +55,9 @@ spec:
           valueFrom:
               secretKeyRef:
                 name: pxc-secrets
-                key: monitor_username
+                key: monitor_password
         - name: PEERS
           value: mysql-0.pxc,mysql-1.pxc,mysql-2.pxc
-        lifecycle:
-          postStart:
-            exec:
-              command: ["/usr/bin/add_cluster_nodes.sh"]
   volumeClaimTemplates:
   - metadata:
       name: proxydata
