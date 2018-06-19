@@ -68,8 +68,9 @@ script:
   - kubectl create -f kubernetes/proxysql-statefulset.yml
   - sleep 30
   - for i in {0..100}; do if [ "$(kubectl get pod proxysql-0 -o=jsonpath='{.status.containerStatuses[0].ready}' || echo false)" == "true" ]; then break; fi; sleep 1; done
-  - sleep 60
   - kubectl logs proxysql-0
+  - sleep 60
+  - kubectl describe pod
   - gcloud container clusters delete $CLUSTER_NAME
 
 deploy:
