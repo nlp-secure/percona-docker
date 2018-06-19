@@ -6,9 +6,10 @@ LABEL com.percona.version="5.7"
 LABEL io.k8s.description="Percona XtraDB Cluster is an active/active high availability and high scalability open source solution for MySQL clustering"
 LABEL io.k8s.display-name="Percona XtraDB Cluster 5.7"
 
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
-    apt-get upgrade && \
+    apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
                 apt-transport-https ca-certificates \
                 pwgen timelimit curl supervisor cron \
@@ -30,7 +31,7 @@ ENV PERCONA_VERSION 5.7.21-26-1.stretch
 # the "/var/lib/mysql" stuff here is because the mysql-server postinst doesn't have an explicit way to disable the mysql_install_db codepath besides having a database already "configured" (ie, stuff in /var/lib/mysql/mysql)
 # also, we set debconf keys to make APT a little quieter
 RUN apt-get update \
-        && DEBIAN_FRONTEND=noninteractive apt-get install -y --force-yes \
+        && apt-get install -y --force-yes \
                  percona-xtradb-cluster-57 \
         && rm -rf /var/lib/apt/lists/* \
         && mv /etc/mysql/percona-xtradb-cluster.conf.d/mysqld.cnf /etc/mysql/my.cnf \
