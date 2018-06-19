@@ -12,7 +12,7 @@ RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
                 apt-transport-https ca-certificates \
-                pwgen timelimit curl supervisor cron \
+                pwgen timelimit curl supervisor cron gnupg \
         && rm -rf /var/lib/apt/lists/*
 
 RUN curl -Lo /usr/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && \
