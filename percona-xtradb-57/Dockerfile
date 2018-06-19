@@ -18,7 +18,7 @@ RUN apt-get update && \
 RUN curl -Lo /usr/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && \
     chmod +x /usr/bin/kubectl
 
-RUN apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys 8507EFA5
+RUN apt-key adv --keyserver ipv4.pool.sks-keyservers.net --recv-keys 8507EFA5
 RUN echo 'deb https://repo.percona.com/apt stretch main' > /etc/apt/sources.list.d/percona.list
 
 # the numeric UID is needed for OpenShift
