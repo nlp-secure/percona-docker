@@ -23,7 +23,7 @@ spec:
             topologyKey: "failure-domain.beta.kubernetes.io/zone"
       containers:
       - name: mysql
-        image: nlpsecure/percona-xtradb-57:latest
+        image: nlpsecure/percona-xtradb-57:feature_proxysql
         imagePullPolicy: Always
         ports:
         - containerPort: 3306
