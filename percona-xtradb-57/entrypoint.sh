@@ -129,4 +129,4 @@ mv /tmp/clustercheck.sh /usr/bin/
 
 sed -i'' -e "s#command=mysqld.*#command=mysqld --user=mysql --wsrep_sst_auth=\"xtrabackup:${XTRABACKUP_PASSWORD}\" ${CMDARG}#g" /etc/supervisord.conf
 
-supervisord -u 1001
+supervisord -c /etc/supervisord.conf
