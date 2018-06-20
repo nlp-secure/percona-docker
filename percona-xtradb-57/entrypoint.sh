@@ -8,7 +8,6 @@ if [ "${1:0:1}" = '-' ]; then
 	CMDARG="$@"
 fi
 
-
 if [ -z "${POD_NAMESPACE}" ]; then
 	echo >&2 'Error:  You need to specify POD_NAMESPACE'
 	exit 1
@@ -25,11 +24,16 @@ DATADIR="$("mysqld" --verbose --wsrep_provider= --help 2>/dev/null | awk '$1 == 
 
 mv /usr/bin/clustercheck.sh /tmp/
 
+# This seems to be a consistent issue, even with nothing else going on.
+# I don't currently have a good explanation for it, but the fix is straightforwards
+# and safe enough that I don't think it deserves a lot of investigation at this
+# point.
+chown -R 1001 "$DATADIR"
+
 # if we have CLUSTER_JOIN - then we do not need to perform datadir initialize
 # the data will be copied from another node
 if [ -f "/tmp/cluster_addr.txt" ]; then
 	WSREP_CLUSTER_ADDRESS=`cat /tmp/cluster_addr.txt`
-	chown -R mysql /var/lib/mysql
 	echo "Cluster address set to: $WSREP_CLUSTER_ADDRESS"
 fi
 
@@ -48,7 +52,7 @@ if [ -z "$WSREP_CLUSTER_ADDRESS" ]; then
 		chown -R mysql "${DATADIR}"
 
 		echo "Running --initialize-insecure on ${DATADIR}"
-		ls -lah "${DATADIR}"
+
 		mysqld --initialize-insecure --user=mysql
 		echo 'Finished --initialize-insecure'
 
@@ -125,10 +129,17 @@ if [ -z "$WSREP_CLUSTER_ADDRESS" ]; then
 	fi
 fi
 
+# Relocate stderr/stdout on our child processes' logs to our process's stdout/stderr
+rm -f /var/log/cron
+
+# Allow writing to stdout and stderr for *this* process
+chmod 0777 /proc/$$/fd/1 /proc/$$/fd/2
+
+# Link them up to logs for child processes
+ln -sf /proc/$$/fd/1 /var/log/cron
+
 mv /tmp/clustercheck.sh /usr/bin/
 
-sed -i'' -e "s#command=mysqld.*#command=mysqld --user=mysql --wsrep_sst_auth=\"xtrabackup:${XTRABACKUP_PASSWORD}\" ${CMDARG}#g" /etc/supervisord.conf
-
-chmod 0777 /dev/stderr /dev/stdout
+sed -i'' -e "s#command=/usr/sbin/mysqld.*#command=/usr/sbin/mysqld --user=mysql --wsrep_sst_auth=\"xtrabackup:${XTRABACKUP_PASSWORD}\" ${CMDARG}#g" /etc/supervisord.conf
 
 supervisord -c /etc/supervisord.conf

@@ -11,9 +11,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
-                apt-transport-https ca-certificates \
+                apt-transport-https ca-certificates procps \
                 pwgen timelimit curl supervisor cron gnupg dirmngr \
-        && rm -rf /var/lib/apt/lists/*
+        && rm -rf /var/lib/apt/lists/* \
+        && rm -f /etc/cron.*/*
 
 RUN curl -Lo /usr/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && \
     chmod +x /usr/bin/kubectl
