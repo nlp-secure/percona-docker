@@ -1,0 +1,2 @@
+1 0 * * * mysql bash /usr/bin/backup-database.sh --full 2 >& 1 > /var/log/cron
+1 1-23/2 * * * mysql bash /usr/bin/backup-database.sh --incremental 2>& 1 > /var/log/cron

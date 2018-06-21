@@ -63,17 +63,17 @@ spec:
                 name: pxc-secrets
                 key: mysql_user
                 optional: true
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: pxc-secrets
+                key: mysql_password
+                optional: true
           - name: MYSQL_DATABASE
             valueFrom:
               secretKeyRef:
                 name: pxc-secrets
                 key: mysql_database
-                optional: true
-          - name: MYSQL_ONETIME_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: pxc-secrets
-                key: mysql_onetime_password
                 optional: true
           - name: MYSQL_MONITOR_USERNAME
             valueFrom:
@@ -87,6 +87,42 @@ spec:
                 key: monitor_password
           - name: POD_LABEL_APP
             value: mysql
+          - name: DATABASE_S3_BUCKET
+            valueFrom:
+              secretKeyRef:
+                name: pxc-secrets
+                key: monitor_password
+                optional: true
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: pxc-secrets
+                key: aws_access_key_id
+                optional: true
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: pxc-secrets
+                key: aws_secret_access_key
+                optional: true
+          - name: TIMEZONE
+            valueFrom:
+              secretKeyRef:
+                name: pxc-secrets
+                key: timezone
+                optional: true
+          - name: BACKUP_ENCRYPTION_ALGORITHM
+            valueFrom:
+              secretKeyRef:
+                name: pxc-secrets
+                key: backup_encryption_algorithm
+                optional: true
+          - name: BACKUP_ENCRYPTION_KEY
+            valueFrom:
+              secretKeyRef:
+                name: pxc-secrets
+                key: backup_encryption_key
+                optional: true
           - name: POD_NAMESPACE
             valueFrom:
               fieldRef:

@@ -11,7 +11,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
-                apt-transport-https ca-certificates procps \
+                apt-transport-https ca-certificates procps python-boto \
                 pwgen timelimit curl supervisor cron gnupg dirmngr \
         && rm -rf /var/lib/apt/lists/* \
         && rm -f /etc/cron.*/*

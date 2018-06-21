@@ -13,6 +13,37 @@ if [ -z "${POD_NAMESPACE}" ]; then
 	exit 1
 fi
 
+if [[ -n "$TIMEZONE" && -f "/usr/share/zoneinfo/$TIMEZONE" ]]; then
+	cp "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
+	dpkg-reconfigure tzdata
+fi
+
+# We need this for backup setup, so it's bumped up to here
+if [ -z "${MYSQL_ROOT_PASSWORD}" -a -z "$MYSQL_ROOT_PASSWORD_FILE" ]; then
+    echo >&2 'error: database is uninitialized and password option is not specified '
+    echo >&2 '  You need to specify one of MYSQL_ROOT_PASSWORD, MYSQL_ROOT_PASSWORD_FILE,  MYSQL_ALLOW_EMPTY_PASSWORD or MYSQL_RANDOM_ROOT_PASSWORD'
+    exit 1
+fi
+
+if [ ! -z "$MYSQL_ROOT_PASSWORD_FILE" -a -z "$MYSQL_ROOT_PASSWORD" ]; then
+  MYSQL_ROOT_PASSWORD=$(cat $MYSQL_ROOT_PASSWORD_FILE)
+fi
+
+if [[ -n "$AWS_ACCESS_KEY_ID" && -n "$AWS_SECRET_ACCESS_KEY" ]]; then
+	mkdir -p ~mysql
+
+	echo '[Credentials]' > ~mysql/.boto
+	echo "aws_access_key_id" >> ~mysql/.boto
+	echo "aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" >> ~mysql/.boto
+
+	echo '[client]' > ~mysql/.my.cnf
+	echo 'user=xtrabackup' >> ~mysql/.my.cnf
+	echo "password=\"$XTRABACKUP_PASSWORD\"" >> ~mysql/.my.cnf
+
+	chown -R mysql ~mysql
+	chmod 0600 ~mysql/.boto ~mysql/.my.cnf
+fi
+
 # Is running in Kubernetes/OpenShift, so find all other pods
 # belonging to the namespace
 echo "Percona XtraDB Cluster: Finding and configuring peers"
@@ -39,15 +70,6 @@ fi
 
 if [ -z "$WSREP_CLUSTER_ADDRESS" ]; then
 	if [ ! -e "${DATADIR}/mysql" ]; then
-		if [ -z "${MYSQL_ROOT_PASSWORD}" -a -z "${MYSQL_ALLOW_EMPTY_PASSWORD}" -a -z "${MYSQL_RANDOM_ROOT_PASSWORD}" -a -z "$MYSQL_ROOT_PASSWORD_FILE" ]; then
-	                    echo >&2 'error: database is uninitialized and password option is not specified '
-	                    echo >&2 '  You need to specify one of MYSQL_ROOT_PASSWORD, MYSQL_ROOT_PASSWORD_FILE,  MYSQL_ALLOW_EMPTY_PASSWORD or MYSQL_RANDOM_ROOT_PASSWORD'
-	                    exit 1
-	            fi
-
-		if [ ! -z "$MYSQL_ROOT_PASSWORD_FILE" -a -z "$MYSQL_ROOT_PASSWORD" ]; then
-		  MYSQL_ROOT_PASSWORD=$(cat $MYSQL_ROOT_PASSWORD_FILE)
-		fi
 		mkdir -p "${DATADIR}"
 		chown -R mysql "${DATADIR}"
 
@@ -75,10 +97,7 @@ if [ -z "$WSREP_CLUSTER_ADDRESS" ]; then
 
 		# sed is for https://bugs.mysql.com/bug.php?id=20545
 		mysql_tzinfo_to_sql /usr/share/zoneinfo | sed 's/Local time zone must be set--see zic manual page/FCTY/' | "${mysql[@]}" mysql
-		if [ ! -z "$MYSQL_RANDOM_ROOT_PASSWORD" ]; then
-			MYSQL_ROOT_PASSWORD="$(pwmake 128)"
-			echo "GENERATED ROOT PASSWORD: ${MYSQL_ROOT_PASSWORD}"
-		fi
+
 		"${mysql[@]}" <<-EOSQL
 			-- What's done in this file shouldn't be replicated
 			--  or products like mysql-fabric won't work
@@ -93,9 +112,8 @@ if [ -z "$WSREP_CLUSTER_ADDRESS" ]; then
 			DROP DATABASE IF EXISTS test ;
 			FLUSH PRIVILEGES ;
 		EOSQL
-		if [ ! -z "${MYSQL_ROOT_PASSWORD}" ]; then
-			mysql+=( -p"${MYSQL_ROOT_PASSWORD}" )
-		fi
+
+		mysql+=( -p"${MYSQL_ROOT_PASSWORD}" )
 
 		if [ "$MYSQL_DATABASE" ]; then
 			echo "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DATABASE\` ;" | "${mysql[@]}"
@@ -112,11 +130,6 @@ if [ -z "$WSREP_CLUSTER_ADDRESS" ]; then
 			echo 'FLUSH PRIVILEGES ;' | "${mysql[@]}"
 		fi
 
-		if [ ! -z "${MYSQL_ONETIME_PASSWORD}" ]; then
-			"${mysql[@]}" <<-EOSQL
-				ALTER USER 'root'@'%' PASSWORD EXPIRE;
-			EOSQL
-		fi
 		if ! kill -s TERM "${pid}" || ! wait "${pid}"; then
 			echo >&2 'MySQL init process failed.'
 			exit 1
@@ -125,7 +138,6 @@ if [ -z "$WSREP_CLUSTER_ADDRESS" ]; then
 		echo
 		echo 'MySQL init process done. Ready for start up.'
 		echo
-		#mv /etc/my.cnf $DATADIR
 	fi
 fi
 
