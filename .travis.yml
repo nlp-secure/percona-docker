@@ -5,8 +5,8 @@ git:
 
 before_install:
   - . test-helpers/helpers.sh
-  - travis_fold docker_setup
-  - travis_fold gce_setup
+  - docker_setup
+  - gce_setup
 
 install: true
 
@@ -14,14 +14,14 @@ install: true
 # Works for today.
 script:
   - . test-helpers/helpers.sh
-  - travis_fold generate_safe_tag
-  - travis_fold generate_cluster_name
-  - travis_fold boot_gke_cluster
-  - travis_fold docker_login
-  - travis_fold docker_get_jwt
-  - travis_fold docker_pull_build_push
-  - travis_fold prep_pxc_cluster
-  - travis_fold boot_pxc_cluster
+  - generate_safe_tag
+  - generate_cluster_name
+  - boot_gke_cluster
+  - docker_login
+  - docker_get_jwt
+  - docker_pull_build_push
+  - prep_pxc_cluster
+  - boot_pxc_cluster
   - check_logs mysql-0
   - wait_for_pod mysql-1
   - check_logs mysql-1
@@ -30,8 +30,8 @@ script:
   - boot_proxysql
   - sleep 30
   - check_logs proxysql-0
-  - travis_fold boot_test_artifact
-  - travis_fold whack_test_artifact
+  - boot_test_artifact
+  - whack_test_artifact
   - check_logs php-test-artifact-0
   - untag_images
   - docker_expire_jwt
@@ -59,6 +59,6 @@ deploy:
   - provider: script
     script: |-
       . test-helpers/helpers.sh
-      travis_fold deploy
+      deploy
     on:
       branch: master
