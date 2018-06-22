@@ -168,4 +168,5 @@ check_logs() {
         php-test-artifact-0)
             export PHP_TEST_ARTIFACT_LOGS="$LOGS"
             ;;
+    esac
 }
