@@ -4,24 +4,24 @@ git:
   depth: 1
 
 before_install:
-  - . test-helpers/helpers.sh
-  - docker_setup
-  - gce_setup
+  - set +x && . test-helpers/helpers.sh && set -x
+  - travis_fold docker_setup
+  - travis_fold gce_setup
 
 install: true
 
 # This is too messy... Needs to be dumped into a bash script or something.
 # Works for today.
 script:
-  - . test-helpers/helpers.sh
-  - generate_safe_tag
-  - generate_cluster_name
-  - boot_gke_cluster
-  - docker_login
-  - docker_get_jwt
-  - docker_pull_build_push
-  - prep_pxc_cluster
-  - boot_pxc_cluster
+  - set +x && . test-helpers/helpers.sh && set -x
+  - travis_fold generate_safe_tag
+  - travis_fold generate_cluster_name
+  - travis_fold boot_gke_cluster
+  - travis_fold docker_login
+  - travis_fold docker_get_jwt
+  - travis_fold docker_pull_build_push
+  - travis_fold prep_pxc_cluster
+  - travis_fold boot_pxc_cluster
   - check_logs mysql-0
   - wait_for_pod mysql-1
   - check_logs mysql-1
@@ -29,10 +29,9 @@ script:
   - check_logs mysql-2
   - boot_proxysql
   - sleep 30
-  - kubectl logs proxysql-0
   - check_logs proxysql-0
-  - boot_test_artifact
-  - whack_test_artifact
+  - travis_fold boot_test_artifact
+  - travis_fold whack_test_artifact
   - check_logs php-test-artifact-0
   - untag_images
   - docker_expire_jwt
@@ -59,13 +58,7 @@ deploy:
   # deploy master to production
   - provider: script
     script: |-
-      docker push $PXC_REPO:latest
-      docker push $PROXYSQL_REPO:latest
-      if [ -n "$TRAVIS_TAG" ]; then
-        docker tag $PXC_REPO:latest $PXC_REPO:$TRAVIS_TAG
-        docker push $PXC_REPO:$TRAVIS_TAG
-        docker tag $PROXYSQL_REPO:latest $PROXYSQL_REPO:$TRAVIS_TAG
-        docker push $PROXYSQL_REPO:$TRAVIS_TAG
-      fi
+      set +x && . test-helpers/helpers.sh && set -x
+      travis_fold deploy
     on:
       branch: master

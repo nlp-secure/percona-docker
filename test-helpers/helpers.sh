@@ -5,6 +5,7 @@ utils_setup() {
 }
 
 docker_setup() {
+    set -x
     sudo apt-get remove docker docker-engine docker.io docker-ce
     sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common jq
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
@@ -13,6 +14,7 @@ docker_setup() {
 }
 
 gce_setup() {
+    set -x
     export CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)"
     echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
     curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
@@ -27,6 +29,7 @@ gce_setup() {
 }
 
 wait_for_pod() {
+    set -x
     sleep 30
 
     POD=$1
@@ -41,20 +44,24 @@ wait_for_pod() {
 }
 
 retag_payloads() {
+    set -x
     for payload in kubernetes/pxc-statefulset.yml kubernetes/proxysql-statefulset.yml php-test-artifact/artifact-statefulset.yml; do
         sed -i'' -e 's#(image: nlpsecure/.+:).*#\1$TAG\"#g' $payload
     done
 }
 
 generate_safe_tag() {
+    set -x
     export TAG=$(echo "$TRAVIS_BRANCH" | sed -e 's/\W/_/g')
 }
 
 generate_cluster_name() {
+    set -x
     export CLUSTER_NAME="travis-$( echo $TAG | sed -e 's/[\W_]/-/g' | head -c 39 )"
 }
 
 boot_gke_cluster() {
+    set -x
     gcloud container clusters delete $CLUSTER_NAME || true
     gcloud container clusters create $CLUSTER_NAME --machine-type=n1-standard-1 --node-locations=$GCE_ZONES --num-nodes=1 --enable-autorepair --enable-autoupgrade 
     gcloud container clusters get-credentials $CLUSTER_NAME
@@ -65,10 +72,12 @@ boot_gke_cluster() {
 }
 
 docker_login() {
+    set -x
     echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
 }
 
 docker_get_jwt() {
+    set -x
     echo -n "Authorization: JWT " > .jwt
     curl -X POST \
             -H "Content-Type: application/json" \
@@ -78,6 +87,7 @@ docker_get_jwt() {
 }
 
 docker_pull_build_push() {
+    set -x
     for repo_and_path in \
         $PXC_REPO:percona-xtradb-57 \
         $PROXYSQL_REPO:proxysql \
@@ -93,6 +103,8 @@ docker_pull_build_push() {
 }
 
 untag_images() {
+    set -x
+
     if [ "$TAG" != "latest" ]; then
         for user_and_repo in $PXC_REPO $PROXYSQL_REPO $PHP_TEST_ARTIFACT_REPO; do
             set +x
@@ -106,6 +118,8 @@ untag_images() {
 }
 
 docker_expire_jwt() {
+    set -x
+
     curl -i -X POST \
         -H "Accept: application/json" \
         -H "@.jwt" \
@@ -113,6 +127,8 @@ docker_expire_jwt() {
 }
 
 prep_pxc_cluster() {
+    set -x
+
     kubectl create -f kubernetes/pxc-serviceaccount.yml
     kubectl create -f kubernetes/pxc-pv-host.yml
     kubectl create -f kubernetes/pxc-secrets.yml
@@ -122,22 +138,29 @@ prep_pxc_cluster() {
 }
 
 boot_pxc_cluster() {
+    set -x
+
     kubectl create -f kubernetes/pxc-statefulset.yml
     wait_for_pod mysql-0
 }
 
 boot_proxysql() {
+    set -x
+
     kubectl create -f kubernetes/proxysql-service.yml
     kubectl create -f kubernetes/proxysql-statefulset.yml
     wait_for_pod proxysql-0
 }
 
 boot_test_artifact() {
+    set -x
     kubectl create -f php-test-artifact/artifact-service.yml
     kubectl create -f php-test-artifact/artifact-statefulset.yml
 }
 
 whack_test_artifact() {
+    set -x
+
     export AB_RESULTS=$(
         kubectl proxy --port=80 php-test-artifact-0:80 &
         ab -n 50 -c 2 http://localhost/
@@ -146,6 +169,7 @@ whack_test_artifact() {
 }
 
 check_logs() {
+    set -x
     POD=$1
     LOGS=$(kubectl logs $POD)
     case $POD in
@@ -169,4 +193,18 @@ check_logs() {
             export PHP_TEST_ARTIFACT_LOGS="$LOGS"
             ;;
     esac
+}
+
+deploy() {
+    set -x
+
+    docker push $PXC_REPO:latest
+    docker push $PROXYSQL_REPO:latest
+
+    if [ -n "$TRAVIS_TAG" ]; then
+        docker tag $PXC_REPO:latest $PXC_REPO:$TRAVIS_TAG
+        docker push $PXC_REPO:$TRAVIS_TAG
+        docker tag $PROXYSQL_REPO:latest $PROXYSQL_REPO:$TRAVIS_TAG
+        docker push $PROXYSQL_REPO:$TRAVIS_TAG
+    fi
 }
