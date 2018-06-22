@@ -24,7 +24,6 @@ RUN set -e && set -x && \
     apt-get update && \
     apt-get install -y nodejs yarn && \
     curl -Lo /usr/bin/gosu https://github.com/tianon/gosu/releases/download/1.10/gosu-amd64 && chmod +x /usr/bin/gosu && \
-    cat /etc/passwd && \
     chown -R nobody . && \
     gosu nobody composer install && \
     gosu nobody yarn --no-install-recommends && \
