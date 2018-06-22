@@ -1,0 +1,36 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: php-test-artifact
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: php-test-artifact
+    spec:
+      containers:
+      - name: mysql
+        image: nlpsecure/php-test-artifact:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+          name: http
+        env:
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: pxc-secrets
+                key: mysql_user
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: pxc-secrets
+                key: mysql_password
+          - name: DB_DATABASE
+            value:
+              secretKeyRef:
+                name: pxc-secrets
+                key: mysql_database
+          - name: DB_HOST
+            value: "sql.pxc"

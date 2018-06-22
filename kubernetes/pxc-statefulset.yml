@@ -62,19 +62,16 @@ spec:
               secretKeyRef:
                 name: pxc-secrets
                 key: mysql_user
-                optional: true
           - name: MYSQL_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: pxc-secrets
                 key: mysql_password
-                optional: true
           - name: MYSQL_DATABASE
             valueFrom:
               secretKeyRef:
                 name: pxc-secrets
                 key: mysql_database
-                optional: true
           - name: MYSQL_MONITOR_USERNAME
             valueFrom:
               secretKeyRef:
