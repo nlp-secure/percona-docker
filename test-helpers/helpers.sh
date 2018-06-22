@@ -42,8 +42,7 @@ wait_for_pod() {
     sleep 30
 
     POD=$1
-    WAIT=${2:-100}
-    for i in {0..$WAIT}; do
+    for i in {0..100}; do
         KUBECTL_OUT=$(kubectl get pod $POD -o=jsonpath='{.status.containerStatuses[0].ready}' || echo false)
         if [ "$KUBECTL_OUT" == "true" ]; then
             break;
