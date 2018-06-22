@@ -4,7 +4,7 @@ git:
   depth: 1
 
 before_install:
-  - set +x && . test-helpers/helpers.sh && set -x
+  - . test-helpers/helpers.sh
   - travis_fold docker_setup
   - travis_fold gce_setup
 
@@ -13,7 +13,7 @@ install: true
 # This is too messy... Needs to be dumped into a bash script or something.
 # Works for today.
 script:
-  - set +x && . test-helpers/helpers.sh && set -x
+  - . test-helpers/helpers.sh
   - travis_fold generate_safe_tag
   - travis_fold generate_cluster_name
   - travis_fold boot_gke_cluster
@@ -58,7 +58,7 @@ deploy:
   # deploy master to production
   - provider: script
     script: |-
-      set +x && . test-helpers/helpers.sh && set -x
+      . test-helpers/helpers.sh
       travis_fold deploy
     on:
       branch: master
