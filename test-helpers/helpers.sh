@@ -1,18 +1,26 @@
 #!/bin/bash
 
 utils_setup() {
+    set -x
+    set -e
     sudo apt-get install -y apache2-utils
+    set +x
 }
 
 docker_setup() {
+    set -x
+    set -e
     sudo apt-get remove docker docker-engine docker.io docker-ce
     sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common jq
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
     sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
     sudo apt-get install -y docker-ce
+    set +x
 }
 
 gce_setup() {
+    set -x
+    set -e
     export CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)"
     echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
     curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
@@ -24,9 +32,12 @@ gce_setup() {
     gcloud config set compute/zone $GCE_ZONE
     gcloud config set compute/region $GCE_REGION
     gcloud config set project $GCE_PROJECT
+    set +x
 }
 
 wait_for_pod() {
+    set -x
+    set -e
     sleep 30
 
     POD=$1
@@ -38,23 +49,35 @@ wait_for_pod() {
         fi;
         sleep 1;
     done
+    set +x
 }
 
 retag_payloads() {
+    set -x
+    set -e
     for payload in kubernetes/pxc-statefulset.yml kubernetes/proxysql-statefulset.yml php-test-artifact/artifact-statefulset.yml; do
         sed -i'' -r -e 's#(image: nlpsecure/.+:).*#\1'"$TAG"'#g' $payload
     done
+    set +x
 }
 
 generate_safe_tag() {
+    set -x
+    set -e
     export TAG=$(echo "$TRAVIS_BRANCH" | sed -e 's/\W/_/g')
+    set +x
 }
 
 generate_cluster_name() {
+    set -x
+    set -e
     export CLUSTER_NAME="travis-$( echo $TAG | sed -e 's/[\W_]/-/g' | head -c 39 )"
+    set +x
 }
 
 boot_gke_cluster() {
+    set -x
+    set -e
     gcloud container clusters delete $CLUSTER_NAME || true
     gcloud container clusters create $CLUSTER_NAME --machine-type=n1-standard-1 --node-locations=$GCE_ZONES --num-nodes=1 --enable-autorepair --enable-autoupgrade 
     gcloud container clusters get-credentials $CLUSTER_NAME
@@ -62,22 +85,31 @@ boot_gke_cluster() {
     kubectl delete limitrange limits
     kubectl create clusterrolebinding owner-cluster-admin-binding --clusterrole cluster-admin --user $ACCOUNT
     echo "Cluster name is $CLUSTER_NAME"
+    set +x
 }
 
 docker_login() {
+    set -x
+    set -e
     echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+    set +x
 }
 
 docker_get_jwt() {
+    set -x
+    set -e
     echo -n "Authorization: JWT " > .jwt
     curl -X POST \
             -H "Content-Type: application/json" \
             -H "Accept: application/json" \
             -d '{"username":"$DOCKER_USER","password":"$DOCKER_USER"}' \
             https://hub.docker.com/v2/users/login/ | jq -r ".token" >> .jwt
+            set +x
 }
 
 docker_pull_build_push() {
+    set -x
+    set -e
     for repo_and_path in \
         $PXC_REPO:percona-xtradb-57 \
         $PROXYSQL_REPO:proxysql \
@@ -90,9 +122,12 @@ docker_pull_build_push() {
         docker tag $repo:latest $repo:$TAG
         docker push $repo:$TAG
     done
+    set +x
 }
 
 untag_images() {
+    set -x
+    set -e
     if [ "$TAG" != "latest" ]; then
         for user_and_repo in $PXC_REPO $PROXYSQL_REPO $PHP_TEST_ARTIFACT_REPO; do
             set +x
@@ -102,49 +137,70 @@ untag_images() {
                 "https://hub.docker.com/v2/repositories/$user_and_repo/tags/$TAG/"
         done
     fi
+    set +x
 }
 
 docker_expire_jwt() {
+    set -x
+    set -e
     curl -i -X POST \
         -H "Accept: application/json" \
         -H "@.jwt" \
         "https://hub.docker.com/v2/logout/"
+        set +x
 }
 
 prep_pxc_cluster() {
+    set -x
+    set -e
     kubectl create -f kubernetes/pxc-serviceaccount.yml
     kubectl create -f kubernetes/pxc-pv-host.yml
     kubectl create -f kubernetes/pxc-secrets.yml
     kubectl create -f kubernetes/pxc-services.yml
 
     retag_payloads $TAG
+    set +x
 }
 
 boot_pxc_cluster() {
+    set -x
+    set -e
     kubectl create -f kubernetes/pxc-statefulset.yml
     wait_for_pod mysql-0
+    set +x
 }
 
 boot_proxysql() {
+    set -x
+    set -e
     kubectl create -f kubernetes/proxysql-service.yml
     kubectl create -f kubernetes/proxysql-statefulset.yml
     wait_for_pod proxysql-0
+    set +x
 }
 
 boot_test_artifact() {
+    set -x
+    set -e
     kubectl create -f php-test-artifact/artifact-service.yml
     kubectl create -f php-test-artifact/artifact-statefulset.yml
+    set +x
 }
 
 whack_test_artifact() {
+    set -x
+    set -e
     export AB_RESULTS=$(
         kubectl proxy --port=80 php-test-artifact-0:80 &
         ab -n 50 -c 2 http://localhost/
         kill %1
     )
+    set +x
 }
 
 check_logs() {
+    set -x
+    set -e
     POD=$1
     LOGS=$(kubectl logs $POD)
     case $POD in
@@ -168,9 +224,12 @@ check_logs() {
             export PHP_TEST_ARTIFACT_LOGS="$LOGS"
             ;;
     esac
+    set +x
 }
 
 deploy() {
+    set -x
+    set -e
     docker push $PXC_REPO:latest
     docker push $PROXYSQL_REPO:latest
 
@@ -180,4 +239,5 @@ deploy() {
         docker tag $PROXYSQL_REPO:latest $PROXYSQL_REPO:$TRAVIS_TAG
         docker push $PROXYSQL_REPO:$TRAVIS_TAG
     fi
+    set +x
 }

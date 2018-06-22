@@ -5,6 +5,7 @@ git:
 
 before_install:
   - . test-helpers/helpers.sh
+  - utils_setup
   - docker_setup
   - gce_setup
 
