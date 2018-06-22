@@ -42,7 +42,7 @@ wait_for_pod() {
 
 retag_payloads() {
     for payload in kubernetes/pxc-statefulset.yml kubernetes/proxysql-statefulset.yml php-test-artifact/artifact-statefulset.yml; do
-        sed -i'' -e 's#(image: nlpsecure/.+:).*#\1$TAG\"#g' $payload
+        sed -i'' -r -e 's#(image: nlpsecure/.+:).*#\1'"$TAG"'#g' $payload
     done
 }
 
