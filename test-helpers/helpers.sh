@@ -3,6 +3,7 @@
 utils_setup() {
     set -x
     set -e
+    sudo apt-get update
     sudo apt-get install -y apache2-utils
     set +x
 }
