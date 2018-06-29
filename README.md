@@ -1,7 +1,7 @@
 Percona XtraDB Cluster docker image
 ===================================
 
-The goal of this image and the surrounding ecosystem (at https://github.com/nlp-secure/percona-docker/) is to provide an off-the-shelf enterprise HA cloud-oriented Kubernetes turn-key solution that requires a minimum of setup and provides best practices by default: reliable bootup, online scheduled backups 24/7, monitoring, SSL, failover, proxying, zonal separation, and built-in restoration processes.  All of these guarantees are to be gated pre-release by modern CI/CD processes.
+The goal of this image and the surrounding ecosystem (at https://github.com/nlp-secure/percona-docker/) is to provide an off-the-shelf enterprise HA cloud-oriented Kubernetes turn-key solution that requires a minimum of setup and provides best practices by default: reliable bootup, monitoring (via PMM), online scheduled backups 24/7, monitoring, SSL, failover, proxying, zonal separation, and built-in restoration processes.  All of these guarantees are to be gated pre-release by modern CI/CD processes.
 
 Right now, we're at: reliable bootup and bootstrapping, online scheduled backups, failover handling, and zonal separation.
 
