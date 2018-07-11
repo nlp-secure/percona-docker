@@ -129,7 +129,7 @@ spec:
   - metadata:
       name: datadir
     spec:
-      storageclassname: database
+      storageClassName: database
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
