@@ -162,6 +162,17 @@ prep_pxc_cluster() {
     set +x
 }
 
+boot_pmm_server() {
+    set -x
+    set -e
+    kubectl create -f kubernetes/pmm-server.yml
+
+    wait_for_pod pmm-server-0
+    sleep 30
+    kubectl logs pmm-server-0
+    set +x
+}
+
 boot_pxc_cluster() {
     set -x
     set -e

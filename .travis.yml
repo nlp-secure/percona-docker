@@ -22,7 +22,7 @@ script:
   - docker_get_jwt
   - docker_pull_build_push
   - prep_pxc_cluster
-  - deploy_pmm_server
+  - boot_pmm_server
   - boot_pxc_cluster
   - check_logs mysql-0
   - wait_for_pod mysql-1
