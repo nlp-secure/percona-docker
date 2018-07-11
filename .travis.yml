@@ -36,15 +36,16 @@ script:
   # - boot_test_artifact
   # - whack_test_artifact
   # - check_logs php-test-artifact-0
-  - untag_images
-  - docker_expire_jwt
-  - gcloud container clusters delete $CLUSTER_NAME
 
-after_failure:
+after_script:
   - . test-helpers/helpers.sh
   - generate_safe_tag
   - generate_cluster_name
+  - untag_images
   - gcloud container clusters delete $CLUSTER_NAME
+  - docker_expire_jwt
+
+after_failure:
   - "echo -n \"mysql 0: $LOGS_0\""
   - "echo -n \"mysql 1: $LOGS_1\""
   - "echo -n \"mysql 2: $LOGS_2\""

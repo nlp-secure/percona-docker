@@ -79,7 +79,7 @@ boot_gke_cluster() {
     set -x
     set -e
     gcloud container clusters delete $CLUSTER_NAME || true
-    gcloud container clusters create $CLUSTER_NAME --machine-type=n1-standard-1 --node-locations=$GCE_ZONES --num-nodes=1 --enable-autorepair --enable-autoupgrade 
+    gcloud container clusters create $CLUSTER_NAME --machine-type=n1-standard-1 --node-locations=$GCE_ZONES --num-nodes=1 --cluster-version=latest
     gcloud container clusters get-credentials $CLUSTER_NAME
     export ACCOUNT=$(gcloud info --format='value(config.account)')
     kubectl delete limitrange limits
