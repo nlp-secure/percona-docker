@@ -154,7 +154,7 @@ prep_pxc_cluster() {
     set -x
     set -e
     kubectl create -f kubernetes/pxc-serviceaccount.yml
-    kubectl create -f kubernetes/pxc-pv-host.yml
+    kubectl create -f kubernetes/gce-database-storageclass.yml
     kubectl create -f kubernetes/pxc-secrets.yml
     kubectl create -f kubernetes/pxc-services.yml
 

@@ -12,7 +12,7 @@ RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
                 apt-transport-https ca-certificates procps python-boto \
-                pwgen timelimit curl supervisor cron gnupg dirmngr \
+                pwgen timelimit curl supervisor cron gnupg dirmngr lsb-release \
         && rm -rf /var/lib/apt/lists/* \
         && rm -f /etc/cron.*/*
 
@@ -43,6 +43,12 @@ RUN apt-get update \
         && chown -R 1001:0 /var/lib/mysql /var/run/mysqld /etc/mysql/conf.d/ && chmod -R g+w /etc/mysql/conf.d/ \
 # ensure that /var/run/mysqld (used for socket and lock files) is writable regardless of the UID our mysqld instance ends up having at runtime
         && chmod 777 /var/run/mysqld
+
+RUN export VERSION=$(curl -s https://raw.githubusercontent.com/nlp-secure/pmm-submodules/master/VERSION) && \
+    export LSB_RELEASE=$(lsb_release -sc) && \
+    curl -Lo pmm-client.deb https://github.com/nlp-secure/pmm-submodules/releases/download/${VERSION}/pmm-client_${VERSION}-1.${LSB_RELEASE}_amd64.deb && \
+    dpkg -i pmm-client.deb && \
+    rm -f pmm-client.deb
 
 # comment out a few problematic configuration values
 # don't reverse lookup hostnames, they are usually another container

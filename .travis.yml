@@ -22,18 +22,20 @@ script:
   - docker_get_jwt
   - docker_pull_build_push
   - prep_pxc_cluster
+  - deploy_pmm_server
   - boot_pxc_cluster
   - check_logs mysql-0
   - wait_for_pod mysql-1
   - check_logs mysql-1
   - wait_for_pod mysql-2
   - check_logs mysql-2
-  - boot_proxysql
-  - sleep 30
-  - check_logs proxysql-0
-  - boot_test_artifact
-  - whack_test_artifact
-  - check_logs php-test-artifact-0
+
+  # - boot_proxysql
+  # - sleep 30
+  # - check_logs proxysql-0
+  # - boot_test_artifact
+  # - whack_test_artifact
+  # - check_logs php-test-artifact-0
   - untag_images
   - docker_expire_jwt
   - gcloud container clusters delete $CLUSTER_NAME
@@ -48,7 +50,7 @@ after_failure:
 
 after_success:
   - "echo -n \"webserver: $PHP_TEST_ARTIFACT_LOGS\""
-  - "echo -n \"ab results: $AB_RESULTS\""  
+  - "echo -n \"ab results: $AB_RESULTS\""
 
 deploy:
   # deploy develop to the staging environment

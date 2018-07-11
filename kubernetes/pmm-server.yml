@@ -1,0 +1,75 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: pmm-server
+spec:
+  serviceName: pmm-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: pmm-server
+    spec:
+      containers:
+      - name: pmm-server
+        image: nlpsecure/pmm-server-aio:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+          name: http
+        - containerPort: 443
+          name: https
+        # readinessProbe:
+        #   exec:
+        #     command:
+        #     - /usr/bin/clustercheck.sh
+        #   initialDelaySeconds: 60
+        #   timeoutSeconds: 15
+        #   periodSeconds: 15
+        #   failureThreshold: 5
+        volumeMounts:
+        - name: prometheus
+          mountPath: /opt/prometheus/data
+        - name: consul
+          mountPath: /opt/consul-data
+        - name: mysql
+          mountPath: /var/lib/mysql
+        - name: grafana
+          mountPath: /var/lib/grafana
+  volumeClaimTemplates:
+    - metadata:
+        name: prometheus
+      spec:
+        storageClassName: database
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 40Gi
+    - metadata:
+        name: consul
+      spec:
+        storageClassName: database
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+    - metadata:
+        name: mysql
+      spec:
+        storageClassName: database
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 40Gi
+    - metadata:
+        name: grafana
+      spec:
+        storageClassName: database
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 40Gi

@@ -129,7 +129,8 @@ spec:
   - metadata:
       name: datadir
     spec:
+      storageclassname: database
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 2Gi
+          storage: 80Gi
