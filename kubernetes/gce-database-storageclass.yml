@@ -6,4 +6,4 @@ provisioner: kubernetes.io/gce-pd
 parameters:
   type: pd-ssd
   replication-type: regional-pd
-  zones: us-east1-a, us-east1-b, us-east1-c
+  zones: us-east4-a, us-east4-b, us-east4-c

@@ -41,6 +41,10 @@ script:
   - gcloud container clusters delete $CLUSTER_NAME
 
 after_failure:
+  - . test-helpers/helpers.sh
+  - generate_safe_tag
+  - generate_cluster_name
+  - gcloud container clusters delete $CLUSTER_NAME
   - "echo -n \"mysql 0: $LOGS_0\""
   - "echo -n \"mysql 1: $LOGS_1\""
   - "echo -n \"mysql 2: $LOGS_2\""
