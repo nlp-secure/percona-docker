@@ -53,12 +53,6 @@ kubectl get pods -n "${POD_NAMESPACE}" -l app="${POD_LABEL_APP}" -o=jsonpath='{r
 # Get config
 DATADIR="$("mysqld" --verbose --wsrep_provider= --help 2>/dev/null | awk '$1 == "datadir" { print $2; exit }')"
 
-if [ ! -f "$DATADIR/pmm.yaml" ]; then
-	pmm-admin config -c "$DATADIR/pmm.yaml" --server pmm-server --server-insecure-ssl --server-password "$PMM_CLIENT_PASSWORD"
-	pmm-admin add mysql:metrics -c "$DATADIR/pmm.yaml"
-	pmm-admin add mysql:queries -c "$DATADIR/pmm.yaml"
-fi
-
 mv /usr/bin/clustercheck.sh /tmp/
 
 # This seems to be a consistent issue, even with nothing else going on.
@@ -145,6 +139,12 @@ if [ -z "$WSREP_CLUSTER_ADDRESS" ]; then
 		echo 'MySQL init process done. Ready for start up.'
 		echo
 	fi
+fi
+
+if [ ! -f "$DATADIR/pmm.yaml" ]; then
+	pmm-admin config -c "$DATADIR/pmm.yaml" --server pmm-server --server-insecure-ssl --server-password "$PMM_CLIENT_PASSWORD"
+	pmm-admin add mysql:metrics -c "$DATADIR/pmm.yaml"
+	pmm-admin add mysql:queries -c "$DATADIR/pmm.yaml"
 fi
 
 # Relocate stderr/stdout on our child processes' logs to our process's stdout/stderr
