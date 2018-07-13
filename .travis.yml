@@ -21,6 +21,8 @@ script:
   - docker_login
   - docker_get_jwt
   - docker_pull_build_push
+  # By default, you aren't allowed enough storage to run this database setup on SSDs.
+  - sed -i'' -e 's/pd-ssd/pd-standard/g' kubernetes/gce-database-storageclass.yml
   - prep_pxc_cluster
   - boot_pmm_server
   - boot_pxc_cluster
