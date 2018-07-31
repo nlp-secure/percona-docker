@@ -49,6 +49,12 @@ wait_for_pod() {
         fi;
         sleep 1;
     done
+
+    if [ "$(kubectl get pod $POD -o=jsonpath='{.status.containerStatuses[0].ready}')" != "true" ]; then
+        kubectl describe pod $POD
+        exit 1
+    fi
+
     set +x
 }
 
@@ -111,10 +117,11 @@ docker_pull_build_push() {
     set -x
     set -e
     for repo_and_path in \
-        $PXC_REPO:percona-xtradb-57 \
-        $PROXYSQL_REPO:proxysql \
-        $PHP_TEST_ARTIFACT_REPO:php-test-artifact
+        $PXC_REPO:percona-xtradb-57 
     do
+        # $PROXYSQL_REPO:proxysql \
+        # $PHP_TEST_ARTIFACT_REPO:php-test-artifact
+
         repo=$(echo $repo_and_path | awk '{ split($0, a, ":"); print a[1]; }')
         path=$(echo $repo_and_path | awk '{ split($0, a, ":"); print a[2]; }')
         docker pull $repo || true
@@ -129,7 +136,7 @@ untag_images() {
     set -x
     set -e
     if [ "$TAG" != "latest" ]; then
-        for user_and_repo in $PXC_REPO $PROXYSQL_REPO $PHP_TEST_ARTIFACT_REPO; do
+        for user_and_repo in $PXC_REPO ; do # $PROXYSQL_REPO $PHP_TEST_ARTIFACT_REPO
             set +x
             curl -X DELETE \
                 -H "Accept: application/json" \
@@ -243,13 +250,13 @@ deploy() {
     set -x
     set -e
     docker push $PXC_REPO:latest
-    docker push $PROXYSQL_REPO:latest
+    # docker push $PROXYSQL_REPO:latest
 
     if [ -n "$TRAVIS_TAG" ]; then
         docker tag $PXC_REPO:latest $PXC_REPO:$TRAVIS_TAG
         docker push $PXC_REPO:$TRAVIS_TAG
-        docker tag $PROXYSQL_REPO:latest $PROXYSQL_REPO:$TRAVIS_TAG
-        docker push $PROXYSQL_REPO:$TRAVIS_TAG
+        # docker tag $PROXYSQL_REPO:latest $PROXYSQL_REPO:$TRAVIS_TAG
+        # docker push $PROXYSQL_REPO:$TRAVIS_TAG
     fi
     set +x
 }
