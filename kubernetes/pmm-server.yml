@@ -19,6 +19,68 @@ spec:
           name: http
         - containerPort: 443
           name: https
+        env:
+        - name: DISABLE_UPDATES
+          valueFrom:
+            configMapKeyRef:
+              name: pmm-config
+              key: disable_updates
+              optional: true
+        - name: ENABLE_DEBUG
+          valueFrom:
+            configMapKeyRef:
+              name: pmm-config
+              key: enable_debug
+              optional: true
+        - name: METRICS_RESOLUTION
+          valueFrom:
+            configMapKeyRef:
+              name: pmm-config
+              key: metrics_resolution
+        - name: METRICS_RETENTION
+          valueFrom:
+            configMapKeyRef:
+              name: pmm-config
+              key: metrics_retention
+        - name: ORCHESTRATOR_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: pmm-config
+              key: orchestrator_enabled
+        - name: ORCHESTRATOR_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: pmm-config
+              key: orchestrator_password
+        - name: ORCHESTRATOR_USER
+          valueFrom:
+            configMapKeyRef:
+              name: pmm-config
+              key: orchestrator_user
+        - name: QUERIES_RETENTION
+          valueFrom:
+            configMapKeyRef:
+              name: pmm-config
+              key: queries_retention
+              optional: true
+        - name: SERVER_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: pmm-config
+              key: server_password
+              optional: true
+        - name: SERVER_USER
+          valueFrom:
+            configMapKeyRef:
+              name: pmm-config
+              key: server_user
+              optional: true
+        - name: UPDATE_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: pmm-config
+              key: update_mode
+              optional: true
         # readinessProbe:
         #   exec:
         #     command:

@@ -62,7 +62,8 @@ spec:
   - metadata:
       name: proxydata
     spec:
+      storageClassName: database
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 2Gi
+          storage: 20Gi

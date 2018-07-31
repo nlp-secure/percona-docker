@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pmm-config
+data:
+  disable_updates: "false"
+  # enable_debug: true
+  # metrics_memory: Leaving this empty, it is calculated from available memory
+  metrics_resolution: "1s"
+  metrics_retention: "720h"
+  orchestrator_enabled: "true"
+  orchestrator_user: "orc_client_user"
+  orchestrator_password: "orc_client_password"
+  queries_retention: "8"
+  server_password: "admin"
+  server_user: "pmm"
+  # update_mode: true
