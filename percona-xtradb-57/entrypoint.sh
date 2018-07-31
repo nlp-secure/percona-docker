@@ -50,8 +50,8 @@ echo "Percona XtraDB Cluster: Finding and configuring peers"
 kubectl get pods -n "${POD_NAMESPACE}" -l app="${POD_LABEL_APP}" -o=jsonpath='{range .items[*]}{.status.podIP}{"\n"}' \
     | /usr/bin/configure-pxc.sh
 
-# Get config
-DATADIR="$("mysqld" --verbose --wsrep_provider= --help 2>/dev/null | awk '$1 == "datadir" { print $2; exit }')"
+# Get config; export it so we can use it outside of 
+export DATADIR="$("mysqld" --verbose --wsrep_provider= --help 2>/dev/null | awk '$1 == "datadir" { print $2; exit }')"
 
 mv /usr/bin/clustercheck.sh /tmp/
 
