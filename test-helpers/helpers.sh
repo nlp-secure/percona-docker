@@ -173,6 +173,7 @@ boot_pmm_server() {
     set -x
     set -e
     kubectl create -f kubernetes/pmm-config.yml
+    kubectl create -f kubernetes/pmm-service.yml
     kubectl create -f kubernetes/pmm-server.yml
 
     wait_for_pod pmm-server-0
