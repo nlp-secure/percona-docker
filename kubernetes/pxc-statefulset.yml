@@ -125,6 +125,11 @@ spec:
               fieldRef:
                 apiVersion: v1
                 fieldPath: metadata.namespace
+          - name: PMM_CLIENT_PASSWORD
+            valueFrom:
+              configMapKeyRef:
+                name: pmm-config
+                key: server_password
   volumeClaimTemplates:
   - metadata:
       name: datadir
