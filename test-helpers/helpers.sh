@@ -85,6 +85,7 @@ boot_gke_cluster() {
     set -x
     set -e
     gcloud container clusters delete $CLUSTER_NAME || true
+    gcloud beta compute disks list --filter=region:$(gcloud config get-value compute/region) --filter=status:ready --filter=LOCATION_SCOPE:region | grep "gke-${CLUSTER_NAME}-pvc" | awk '{ print $1; }' | xargs -n1 gcloud beta compute disks delete --region=$(gcloud config get-value compute/region) || true
     gcloud container clusters create $CLUSTER_NAME --machine-type=n1-standard-1 --node-locations=$GCE_ZONES --num-nodes=1 --cluster-version=latest
     gcloud container clusters get-credentials $CLUSTER_NAME
     export ACCOUNT=$(gcloud info --format='value(config.account)')

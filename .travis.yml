@@ -45,6 +45,7 @@ after_script:
   - generate_cluster_name
   - untag_images
   - gcloud container clusters delete $CLUSTER_NAME
+  - gcloud beta compute disks list --filter=region:$(gcloud config get-value compute/region) --filter=status:ready --filter=LOCATION_SCOPE:region | grep "gke-${CLUSTER_NAME}-pvc" | awk '{ print $1; }' | xargs -n1 gcloud beta compute disks delete --region=$(gcloud config get-value compute/region) || true
   - docker_expire_jwt
 
 after_failure:
